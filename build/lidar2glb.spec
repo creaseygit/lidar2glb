@@ -1,55 +1,76 @@
 # -*- mode: python ; coding: utf-8 -*-
 #
 # PyInstaller spec file for LiDAR2GLB
-# Build with: pyinstaller build/lidar2glb.spec --noconfirm
+# Build with: python -m PyInstaller build/lidar2glb.spec --noconfirm
 #
 
 import os
+import glob
 from PyInstaller.utils.hooks import collect_all
 
-block_cipher = None
-
-# Collect all rasterio data files, binaries, and hidden imports (bundles GDAL)
+# Collect rasterio (bundles GDAL)
 rasterio_datas, rasterio_binaries, rasterio_hiddenimports = collect_all('rasterio')
 
-# Determine icon path (use icon.ico if it exists, otherwise no icon)
+# Collect PyQt6 fully — ensures Qt6 DLLs, platform plugins, etc. are bundled
+pyqt6_datas, pyqt6_binaries, pyqt6_hiddenimports = collect_all('PyQt6')
+
+# Fix: also place key Qt6 DLLs directly next to the .pyd files (PyQt6/ dir)
+# so Windows DLL search finds them when loading QtWidgets.pyd etc.
+qt6_bin = os.path.join(
+    os.sys.prefix, 'Lib', 'site-packages', 'PyQt6', 'Qt6', 'bin'
+)
+qt6_flat_binaries = []
+for dll in glob.glob(os.path.join(qt6_bin, '*.dll')):
+    qt6_flat_binaries.append((dll, 'PyQt6'))
+
+# Remove conflicting ICU DLLs from rasterio/GDAL.
+# rasterio bundles ICU 67 (versioned symbols like ucnv_open_67) which
+# poisons Qt6Core.dll's ICU resolution (it expects unversioned symbols).
+# Nothing in the rasterio bundle actually imports these DLLs.
+_icu_blocklist = {'icuuc.dll', 'icudt67.dll', 'icuuc67.dll', 'icudt.dll'}
+rasterio_binaries = [
+    (src, dest) for src, dest in rasterio_binaries
+    if os.path.basename(src).lower() not in _icu_blocklist
+]
+
 icon_path = os.path.join(SPECPATH, '..', 'assets', 'icon.ico')
 icon_file = icon_path if os.path.isfile(icon_path) else None
 
 a = Analysis(
     [os.path.join(SPECPATH, '..', 'app', 'main.py')],
-    pathex=[],
-    binaries=rasterio_binaries,
-    datas=rasterio_datas,
+    pathex=[os.path.join(SPECPATH, '..')],
+    binaries=rasterio_binaries + pyqt6_binaries + qt6_flat_binaries,
+    datas=rasterio_datas + pyqt6_datas,
     hiddenimports=[
-        'PyQt6',
-        'PyQt6.QtCore',
-        'PyQt6.QtGui',
-        'PyQt6.QtWidgets',
-        'PyQt6.sip',
         'numpy',
         'scipy',
+        'scipy.spatial',
         'pygltflib',
-    ] + rasterio_hiddenimports,
+        'core',
+        'core.inspector',
+        'core.extractor',
+        'core.triangulator',
+        'core.pipeline',
+        'exporters',
+        'exporters.glb_writer',
+    ] + rasterio_hiddenimports + pyqt6_hiddenimports,
     hookspath=[],
     hooksconfig={},
-    runtime_hooks=[],
+    runtime_hooks=[os.path.join(SPECPATH, 'pyi_rth_qt6_dlls.py')],
     excludes=[],
-    win_no_prefer_redirects=False,
-    win_private_assemblies=False,
-    cipher=block_cipher,
     noarchive=False,
 )
 
-pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+# Also strip ICU DLLs that PyInstaller's dependency scanner may have added
+a.binaries = [b for b in a.binaries if os.path.basename(b[0]).lower() not in _icu_blocklist]
+
+pyz = PYZ(a.pure)
 
 exe = EXE(
     pyz,
     a.scripts,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
     [],
+    exclude_binaries=True,
     name='lidar2glb',
     debug=False,
     bootloader_ignore_signals=False,
@@ -64,4 +85,14 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     icon=icon_file,
+)
+
+coll = COLLECT(
+    exe,
+    a.binaries,
+    a.datas,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
+    name='lidar2glb',
 )
