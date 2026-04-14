@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- **Python 3.11** (3.12 has PyInstaller compatibility issues with some wheels)
+- **Python 3.11+** (tested with 3.12)
 - **Windows** (the app targets Windows; the core pipeline may work on other platforms but is untested)
 
 ## Dev Environment Setup
@@ -64,9 +64,17 @@ Tests use mocked rasterio datasets so no real GeoTIFF files are needed.
 build\build.bat
 ```
 
-This runs `pyinstaller build/lidar2glb.spec --noconfirm` and outputs `dist/lidar2glb.exe`.
+Or manually:
 
-The spec file uses `collect_all('rasterio')` to bundle GDAL and all rasterio dependencies. UPX compression is enabled to reduce the exe size.
+```bash
+python -m PyInstaller build/lidar2glb.spec --noconfirm
+```
+
+This outputs a folder at `dist/lidar2glb/` containing `lidar2glb.exe` and an `_internal/` directory with all dependencies.
+
+The spec file uses `collect_all('rasterio')` and `collect_all('PyQt6')` to bundle GDAL and Qt6. It strips conflicting ICU DLLs from rasterio and copies Qt6 DLLs next to PyQt6's `.pyd` files to fix DLL resolution. A runtime hook (`build/pyi_rth_qt6_dlls.py`) adds the Qt6 bin directory to the Windows DLL search path.
+
+Logs from the packaged exe are written to `_internal/logs/`.
 
 ## Adding New Features
 

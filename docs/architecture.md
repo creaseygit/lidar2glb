@@ -71,7 +71,11 @@ Output .glb
 
 `extractor.apply_local_shift(points)` subtracts the minimum X and Y values from all points so the mesh is near the origin. Returns the shifted points and the shift vector `(shift_x, shift_y)`.
 
-### Step 3: Coordinate Transform
+### Step 3: Triangulate
+
+`triangulator.triangulate_2d5(points)` runs `scipy.spatial.Delaunay` on the XY ground plane (easting and northing). This must happen **before** the coordinate transform — triangulating after the Y/Z swap would connect points by elevation similarity instead of spatial proximity. Returns float32 vertices and uint32 face indices.
+
+### Step 4: Coordinate Transform
 
 The pipeline (in `pipeline.py`) converts from source CRS coordinates to glTF Y-up:
 
@@ -79,11 +83,7 @@ The pipeline (in `pipeline.py`) converts from source CRS coordinates to glTF Y-u
 - Z (elevation) becomes Y (up)
 - Y (northing) becomes -Z
 
-Z scale is applied before the coordinate transform.
-
-### Step 4: Triangulate
-
-`triangulator.triangulate_2d5(points)` runs `scipy.spatial.Delaunay` on the XZ plane (glTF X and Z, which were the original easting and northing). Returns float32 vertices and uint32 face indices.
+Z scale is applied before triangulation.
 
 ### Step 5: Write GLB
 

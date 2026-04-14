@@ -6,7 +6,7 @@ LiDAR2GLB is a Windows desktop application that converts DEFRA LiDAR GeoTIFF til
 
 ```
 app/                  PyQt6 UI layer
-  main.py             Entry point (QApplication setup)
+  main.py             Entry point, file logging, error handling
   main_window.py      Main window layout and signal wiring
   drop_zone.py        Drag-and-drop file input widget
   tile_info_panel.py  Displays loaded tile metadata
@@ -24,7 +24,8 @@ exporters/            Output format writers
 
 build/                Build tooling
   build.bat           Windows build script
-  lidar2glb.spec      PyInstaller spec file
+  lidar2glb.spec      PyInstaller spec (onedir, ICU exclusion, Qt6 DLL fix)
+  pyi_rth_qt6_dlls.py Runtime hook: adds Qt6 DLL dir to search path
 
 tests/                Unit tests (pytest)
   test_inspector.py   Tests for inspector and validation
@@ -50,8 +51,8 @@ python -m app.main
 # Run tests
 pytest tests/
 
-# Build the .exe
-build\build.bat
+# Build the exe (outputs to dist/lidar2glb/)
+python -m PyInstaller build/lidar2glb.spec --noconfirm
 ```
 
 ## Tech Decisions
@@ -64,7 +65,7 @@ build\build.bat
 
 ## Coordinate Transform
 
-The source data is in EPSG:27700 (British National Grid) with X = easting, Y = northing, Z = elevation. glTF uses a right-handed Y-up coordinate system. The transform applied in `core/pipeline.py` is:
+The source data is in EPSG:27700 (British National Grid) with X = easting, Y = northing, Z = elevation. glTF uses a right-handed Y-up coordinate system. The pipeline triangulates on the XY ground plane first, then converts to glTF coordinates:
 
 ```
 Source X (easting)           ->  glTF X
@@ -73,3 +74,10 @@ Source Y (northing, negated) ->  glTF Z
 ```
 
 A local origin shift is applied first (subtract min X and min Y) so the mesh is centred near the origin. The original easting/northing offsets are stored in the GLB metadata extras so the mesh can be repositioned to real-world coordinates if needed.
+
+## Build Gotchas
+
+- **ICU DLL conflict**: rasterio/GDAL bundles `icuuc.dll` (ICU 67, versioned symbols) which poisons Qt6Core.dll's ICU resolution. The spec strips these — nothing in the bundle actually needs them.
+- **Qt6 DLL path**: PyQt6's `.pyd` files need Qt6 DLLs next to them. The spec copies `Qt6/bin/*.dll` into `PyQt6/` alongside the `.pyd` files, and a runtime hook (`pyi_rth_qt6_dlls.py`) adds the path to the DLL search order.
+- **Onedir not onefile**: The build uses `--onedir` (COLLECT) because `--onefile` has Qt DLL resolution issues in the temp extraction folder.
+- **CRS detection**: DEFRA tiles use ESRI WKT instead of EPSG codes. The inspector falls back to fuzzy matching and WKT string inspection to detect EPSG:27700.

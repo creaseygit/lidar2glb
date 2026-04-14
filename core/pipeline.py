@@ -78,20 +78,20 @@ class ExportWorker(QRunnable):
             self.signals.log.emit(f"Applying Z scale: {settings.z_scale}x")
             points[:, 2] *= settings.z_scale
 
-        # --- Step 4: Convert to GLTF coordinate system ----------------------
+        # --- Step 4: Triangulate on the XY ground plane ----------------------
+        self.signals.log.emit("Triangulating (this may take a while)...")
+        vertices, faces = triangulate_2d5(points)
+
+        # --- Step 5: Convert to GLTF coordinate system ----------------------
         #   Source X (easting)  -> GLTF X
         #   Source Z (elevation) -> GLTF Y
         #   Source Y (northing, negated) -> GLTF Z
         self.signals.log.emit("Converting to GLTF coordinate system...")
-        gltf_points = points.copy()
-        gltf_points[:, 0] = points[:, 0]   # X -> X
-        gltf_points[:, 1] = points[:, 2]   # Z -> Y
-        gltf_points[:, 2] = -points[:, 1]  # -Y -> Z
-        self.signals.progress.emit(40)
-
-        # --- Step 5: Triangulate -------------------------------------------
-        self.signals.log.emit("Triangulating (this may take a while)...")
-        vertices, faces = triangulate_2d5(gltf_points)
+        gltf_verts = vertices.copy()
+        gltf_verts[:, 0] = vertices[:, 0]   # X -> X
+        gltf_verts[:, 1] = vertices[:, 2]   # Z -> Y
+        gltf_verts[:, 2] = -vertices[:, 1]  # -Y -> Z
+        vertices = gltf_verts
         self.signals.log.emit(
             f"Created mesh: {len(vertices):,} vertices, {len(faces):,} faces."
         )

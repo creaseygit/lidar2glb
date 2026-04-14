@@ -26,11 +26,34 @@ class TileInfo:
     data_type: str
 
 
+def _resolve_epsg(crs: rasterio.crs.CRS) -> tuple[int, str]:
+    """Resolve CRS to an EPSG code, handling ESRI WKT variants.
+
+    DEFRA LiDAR tiles often use ESRI WKT for OSGB 1936 / British National
+    Grid instead of embedding an EPSG code directly.
+    """
+    epsg = crs.to_epsg()
+    if epsg:
+        return epsg, crs.to_string()
+
+    # Try with a confidence threshold — rasterio/PROJ can sometimes match
+    # when the default exact match fails
+    epsg = crs.to_epsg(confidence_threshold=70)
+    if epsg:
+        return epsg, crs.to_string()
+
+    # Fall back to WKT string matching for known DEFRA CRS variants
+    wkt = crs.to_wkt().upper()
+    if "OSGB" in wkt and "BRITISH_NATIONAL_GRID" in wkt:
+        return 27700, "OSGB 1936 / British National Grid"
+
+    return 0, crs.to_string() if crs else "Unknown"
+
+
 def inspect(path: str) -> TileInfo:
     with rasterio.open(path) as ds:
         crs = ds.crs
-        crs_epsg = crs.to_epsg() or 0
-        crs_name = crs.to_string() if crs else "Unknown"
+        crs_epsg, crs_name = _resolve_epsg(crs)
         transform = ds.transform
         pixel_size_m = abs(transform.a)
         width_px = ds.width
