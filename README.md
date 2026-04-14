@@ -19,7 +19,12 @@ LiDAR2Mesh is a Windows desktop app that turns DEFRA LiDAR elevation data (.tif)
 
 ### Download
 
-Grab the latest release from the [Releases](https://github.com/creaseygit/lidar2mesh/releases) page and run `lidar2mesh.exe`.
+1. Go to the [Releases](https://github.com/creaseygit/lidar2mesh/releases) page
+2. Under the latest release, expand **Assets** and download `lidar2mesh-vX.X.X-win64.zip`
+3. Extract the zip to any folder
+4. Run `lidar2mesh.exe` from the extracted folder
+
+No installation or Python required. Windows 10+ only. The `_internal` folder must stay next to the exe.
 
 ### Developer Setup
 
