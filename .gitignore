@@ -6,17 +6,17 @@ __pycache__/
 *.egg
 *.egg-info/
 dist/
-build/
-*.spec
 
 # Virtual environments
 venv/
 .venv/
 env/
 
-# PyInstaller
+# PyInstaller output (keep build/ dir with spec and scripts)
 *.manifest
-*.spec
+
+# Claude Code local settings
+.claude/
 
 # IDE
 .vscode/
