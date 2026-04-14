@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.spec
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# PyInstaller
+*.manifest
+*.spec
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Rasterio / GDAL temp files
+*.aux.xml
+
+# Test artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment / secrets
+.env
+
+# Sample data (large GeoTIFFs shouldn't be committed)
+*.tif
+*.tiff
