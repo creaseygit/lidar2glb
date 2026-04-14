@@ -23,7 +23,7 @@ Input .tif
    Output: vertices (N,3) + faces (M,3)
     |
     v
-4. GLB Writer (exporters/glb_writer.py)
+4. Mesh Writer (exporters/glb_writer.py or obj_writer.py)
    Pack vertices/faces into binary GLB
    Embed metadata in node extras
     |
@@ -47,6 +47,7 @@ Output .glb
 | Module | Responsibility |
 |---|---|
 | `glb_writer.py` | Convert numpy arrays to binary GLB via pygltflib |
+| `obj_writer.py` | Convert numpy arrays to Wavefront OBJ |
 
 ### `app/` -- User Interface
 
@@ -87,7 +88,7 @@ Z scale is applied before triangulation.
 
 ### Step 5: Write GLB
 
-`glb_writer.write_glb(vertices, faces, path, extras)` constructs a glTF 2.0 structure with one scene, one node, one mesh, one TRIANGLES primitive, and two buffer views (positions + indices). Metadata is embedded in the node's `extras` field.
+The pipeline selects the writer based on the output file extension. `glb_writer.write_glb()` constructs a glTF 2.0 structure with one scene, one node, one mesh, one TRIANGLES primitive, and two buffer views (positions + indices). Metadata is embedded in the node's `extras` field. `obj_writer.write_obj()` writes a plain-text Wavefront OBJ with vertices, faces, and metadata as header comments.
 
 ## Threading Model
 

@@ -13,6 +13,7 @@ venv/
 env/
 
 # PyInstaller output (keep build/ dir with spec and scripts)
+build/lidar2mesh/
 build/lidar2glb/
 *.manifest
 

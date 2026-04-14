@@ -69,7 +69,7 @@ class TestWriteGlb:
         index_accessor = gltf.accessors[1]
         assert index_accessor.count == faces.size  # 3 indices
 
-    def test_extras_contain_lidar2glb_key(self, tmp_path):
+    def test_extras_contain_lidar2mesh_key(self, tmp_path):
         vertices, faces = _simple_triangle()
         out = str(tmp_path / "test.glb")
         metadata = {"crs": "EPSG:27700", "pixel_size": 1.0}
@@ -78,9 +78,9 @@ class TestWriteGlb:
 
         gltf = GLTF2.load(out)
         node_extras = gltf.nodes[0].extras
-        assert "lidar2glb" in node_extras
-        assert node_extras["lidar2glb"]["crs"] == "EPSG:27700"
-        assert node_extras["lidar2glb"]["pixel_size"] == 1.0
+        assert "lidar2mesh" in node_extras
+        assert node_extras["lidar2mesh"]["crs"] == "EPSG:27700"
+        assert node_extras["lidar2mesh"]["pixel_size"] == 1.0
 
     def test_multi_triangle_mesh(self, tmp_path):
         vertices = np.array(

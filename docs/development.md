@@ -8,8 +8,8 @@
 ## Dev Environment Setup
 
 ```bash
-git clone https://github.com/creaseygit/lidar2glb.git
-cd lidar2glb
+git clone https://github.com/creaseygit/lidar2mesh.git
+cd lidar2mesh
 python -m venv venv
 venv\Scripts\activate
 pip install -r requirements-dev.txt
@@ -39,7 +39,7 @@ exporters/            Output writers
 
 build/                Build tooling
   build.bat           Build script
-  lidar2glb.spec      PyInstaller spec
+  lidar2mesh.spec      PyInstaller spec
 
 tests/                Unit tests
 ```
@@ -67,10 +67,10 @@ build\build.bat
 Or manually:
 
 ```bash
-python -m PyInstaller build/lidar2glb.spec --noconfirm
+python -m PyInstaller build/lidar2mesh.spec --noconfirm
 ```
 
-This outputs a folder at `dist/lidar2glb/` containing `lidar2glb.exe` and an `_internal/` directory with all dependencies.
+This outputs a folder at `dist/lidar2mesh/` containing `lidar2mesh.exe` and an `_internal/` directory with all dependencies.
 
 The spec file uses `collect_all('rasterio')` and `collect_all('PyQt6')` to bundle GDAL and Qt6. It strips conflicting ICU DLLs from rasterio and copies Qt6 DLLs next to PyQt6's `.pyd` files to fix DLL resolution. A runtime hook (`build/pyi_rth_qt6_dlls.py`) adds the Qt6 bin directory to the Windows DLL search path.
 

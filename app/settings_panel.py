@@ -6,6 +6,7 @@ from pathlib import Path
 
 from PyQt6.QtWidgets import (
     QButtonGroup,
+    QComboBox,
     QDoubleSpinBox,
     QFileDialog,
     QGroupBox,
@@ -43,6 +44,17 @@ class SettingsPanel(QGroupBox):
         resolution_layout.addWidget(self._quarter_radio)
         resolution_layout.addStretch()
 
+        # -- Format selector --------------------------------------------------
+        self._format_combo = QComboBox()
+        self._format_combo.addItem("GLB (.glb)", ".glb")
+        self._format_combo.addItem("OBJ (.obj)", ".obj")
+        self._format_combo.currentIndexChanged.connect(self._on_format_changed)
+
+        format_layout = QHBoxLayout()
+        format_layout.addWidget(QLabel("Format:"))
+        format_layout.addWidget(self._format_combo)
+        format_layout.addStretch()
+
         # -- Z scale spinner --------------------------------------------------
         self._z_scale_spin = QDoubleSpinBox()
         self._z_scale_spin.setRange(0.1, 100.0)
@@ -69,6 +81,7 @@ class SettingsPanel(QGroupBox):
         # -- Assemble ---------------------------------------------------------
         layout = QVBoxLayout(self)
         layout.addLayout(resolution_layout)
+        layout.addLayout(format_layout)
         layout.addLayout(z_scale_layout)
         layout.addLayout(output_layout)
 
@@ -90,16 +103,30 @@ class SettingsPanel(QGroupBox):
         """Pre-fill the output path (typically derived from the input file)."""
         self._output_edit.setText(path)
 
+    def _on_format_changed(self) -> None:
+        """Update the output path extension when the format changes."""
+        current = self._output_edit.text()
+        if not current:
+            return
+        ext = self._format_combo.currentData()
+        new_path = str(Path(current).with_suffix(ext))
+        self._output_edit.setText(new_path)
+
     def _browse_output(self) -> None:
         current = self._output_edit.text()
         start_dir = str(Path(current).parent) if current else ""
+        ext = self._format_combo.currentData()
+        if ext == ".obj":
+            filter_str = "OBJ files (*.obj);;All files (*)"
+        else:
+            filter_str = "GLB files (*.glb);;All files (*)"
         path, _ = QFileDialog.getSaveFileName(
             self,
-            "Save GLB file",
+            "Save mesh file",
             start_dir,
-            "GLB files (*.glb);;All files (*)",
+            filter_str,
         )
         if path:
-            if not path.lower().endswith(".glb"):
-                path += ".glb"
+            if not path.lower().endswith(ext):
+                path += ext
             self._output_edit.setText(path)

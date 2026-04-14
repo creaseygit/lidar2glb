@@ -20,7 +20,7 @@ def _setup_logging() -> Path:
     log_dir = base / "logs"
     log_dir.mkdir(exist_ok=True)
 
-    log_file = log_dir / f"lidar2glb_{datetime.now():%Y%m%d_%H%M%S}.log"
+    log_file = log_dir / f"lidar2mesh_{datetime.now():%Y%m%d_%H%M%S}.log"
 
     logging.basicConfig(
         filename=str(log_file),
@@ -32,7 +32,7 @@ def _setup_logging() -> Path:
 
 def main() -> None:
     log_file = _setup_logging()
-    logging.info("LiDAR2GLB starting")
+    logging.info("LiDAR2Mesh starting")
     logging.info("Python %s", sys.version)
 
     try:
@@ -41,7 +41,7 @@ def main() -> None:
         from app.main_window import MainWindow
 
         app = QApplication(sys.argv)
-        app.setApplicationName("LiDAR2GLB")
+        app.setApplicationName("LiDAR2Mesh")
         window = MainWindow()
         window.show()
         logging.info("UI launched successfully")

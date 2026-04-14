@@ -2,7 +2,7 @@
 
 ## Overview
 
-LiDAR2GLB produces binary GLB files (glTF 2.0). Each file contains a single triangle mesh representing the terrain surface.
+LiDAR2Mesh produces binary GLB files (glTF 2.0). Each file contains a single triangle mesh representing the terrain surface.
 
 ## Binary GLB Structure
 
@@ -61,7 +61,7 @@ Faces are `TRIANGLES` mode (mode 4). Each group of three indices defines one tri
 
 ```
 Scene 0
-  Node 0 (extras: lidar2glb metadata)
+  Node 0 (extras: lidar2mesh metadata)
     Mesh 0
       Primitive 0 (mode: TRIANGLES)
         POSITION -> Accessor 0 -> BufferView 0
@@ -70,11 +70,11 @@ Scene 0
 
 ## Metadata Extras Schema
 
-Metadata is stored on the root node under `extras.lidar2glb`:
+Metadata is stored on the root node under `extras.lidar2mesh`:
 
 ```json
 {
-  "lidar2glb": {
+  "lidar2mesh": {
     "source_file": "DSM_D0155333_20120402_20120416.tif",
     "crs_epsg": 27700,
     "origin_easting": 527000.0,
@@ -115,8 +115,8 @@ import bpy
 import json
 
 obj = bpy.context.active_object
-if obj and "lidar2glb" in obj:
-    meta = obj["lidar2glb"]
+if obj and "lidar2mesh" in obj:
+    meta = obj["lidar2mesh"]
     # meta is a dict-like IDPropertyGroup
     print(f"Source: {meta['source_file']}")
     print(f"CRS: EPSG:{meta['crs_epsg']}")
@@ -125,7 +125,7 @@ if obj and "lidar2glb" in obj:
     print(f"Z range: {meta['z_min']} to {meta['z_max']}")
     print(f"Z scale: {meta['z_scale']}")
 else:
-    print("Select an imported LiDAR2GLB object first.")
+    print("Select an imported LiDAR2Mesh object first.")
 ```
 
 You can also view the extras in the Object Properties panel under Custom Properties.

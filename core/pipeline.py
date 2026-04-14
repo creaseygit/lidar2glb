@@ -11,6 +11,7 @@ from core.extractor import apply_local_shift, extract_points
 from core.inspector import TileInfo
 from core.triangulator import triangulate_2d5
 from exporters.glb_writer import write_glb
+from exporters.obj_writer import write_obj
 
 
 @dataclass
@@ -97,9 +98,10 @@ class ExportWorker(QRunnable):
         )
         self.signals.progress.emit(80)
 
-        # --- Step 6: Write GLB ---------------------------------------------
+        # --- Step 6: Write mesh ---------------------------------------------
         output_path = settings.output_path
-        self.signals.log.emit(f"Writing GLB to {output_path}...")
+        ext = os.path.splitext(output_path)[1].lower()
+        self.signals.log.emit(f"Writing {ext} to {output_path}...")
 
         extras = {
             "source_file": os.path.basename(info.path),
@@ -112,7 +114,10 @@ class ExportWorker(QRunnable):
             "z_max": info.z_max,
         }
 
-        write_glb(vertices, faces, output_path, extras)
+        if ext == ".obj":
+            write_obj(vertices, faces, output_path, extras)
+        else:
+            write_glb(vertices, faces, output_path, extras)
         self.signals.progress.emit(100)
 
         file_size_mb = os.path.getsize(output_path) / (1024 * 1024)

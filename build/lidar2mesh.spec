@@ -1,7 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 #
-# PyInstaller spec file for LiDAR2GLB
-# Build with: python -m PyInstaller build/lidar2glb.spec --noconfirm
+# PyInstaller spec file for LiDAR2Mesh
+# Build with: python -m PyInstaller build/lidar2mesh.spec --noconfirm
 #
 
 import os
@@ -53,6 +53,7 @@ a = Analysis(
         'core.pipeline',
         'exporters',
         'exporters.glb_writer',
+        'exporters.obj_writer',
     ] + rasterio_hiddenimports + pyqt6_hiddenimports,
     hookspath=[],
     hooksconfig={},
@@ -71,7 +72,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='lidar2glb',
+    name='lidar2mesh',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -94,5 +95,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='lidar2glb',
+    name='lidar2mesh',
 )

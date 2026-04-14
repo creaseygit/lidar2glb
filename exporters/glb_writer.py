@@ -35,7 +35,7 @@ def write_glb(
         vertices: (N, 3) float32 vertex positions.
         faces: (M, 3) uint32 triangle indices.
         output_path: Destination file path.
-        extras: Metadata dict embedded under the root node's "lidar2glb" key.
+        extras: Metadata dict embedded under the root node's "lidar2mesh" key.
     """
     vertices = np.ascontiguousarray(vertices, dtype=np.float32)
     faces = np.ascontiguousarray(faces, dtype=np.uint32)
@@ -52,13 +52,13 @@ def write_glb(
     v_max = vertices.max(axis=0).tolist()
 
     gltf = GLTF2(
-        asset=Asset(generator="LiDAR2GLB", version="2.0"),
+        asset=Asset(generator="LiDAR2Mesh", version="2.0"),
         scene=0,
         scenes=[Scene(nodes=[0])],
         nodes=[
             Node(
                 mesh=0,
-                extras={"lidar2glb": extras},
+                extras={"lidar2mesh": extras},
             ),
         ],
         meshes=[

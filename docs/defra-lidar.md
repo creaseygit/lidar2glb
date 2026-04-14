@@ -30,7 +30,7 @@ Tiles are typically named like `DSM_D0155333_20120402_20120416.tif` where the nu
 
 ## Expected Tile Format
 
-LiDAR2GLB expects tiles with these characteristics:
+LiDAR2Mesh expects tiles with these characteristics:
 
 | Property | Value |
 |---|---|
@@ -60,5 +60,5 @@ Not all resolutions are available for all areas. 0.5m is the most widely availab
 - **Start with 1.0m or 0.5m resolution**. High-resolution 0.25m tiles produce very large meshes and need significant RAM during triangulation.
 - **Check the survey date**. Newer surveys generally have better quality. Multiple surveys may cover the same area at different dates.
 - **Coastal and river tiles** may have large NoData regions where the laser hit water. The resulting mesh will have holes or irregular edges at these boundaries.
-- **Use the Half or Quarter resolution export setting** in LiDAR2GLB if full resolution produces a mesh that is too large for your target application.
+- **Use the Half or Quarter resolution export setting** in LiDAR2Mesh if full resolution produces a mesh that is too large for your target application.
 - **Full resolution 0.5m tiles** (4M points) need approximately 2GB of RAM during triangulation. Quarter resolution reduces this significantly.

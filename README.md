@@ -1,16 +1,17 @@
-# LiDAR2GLB
+# LiDAR2Mesh
 
-Convert DEFRA LiDAR GeoTIFF tiles to GLB 3D meshes.
+Convert DEFRA LiDAR GeoTIFF tiles to 3D meshes (GLB and OBJ).
 
-LiDAR2GLB is a Windows desktop app that turns DEFRA LiDAR elevation data (.tif) into 3D mesh files (.glb) you can open in Blender, game engines, or any glTF viewer. No GIS software required.
+LiDAR2Mesh is a Windows desktop app that turns DEFRA LiDAR elevation data (.tif) into 3D mesh files (.glb or .obj) you can open in Blender, game engines, or any 3D viewer. No GIS software required.
 
 *Screenshot coming soon.*
 
 ## Features
 
-- **Single .exe** -- download and run, no installation needed
+- **Single exe** -- download and run, no installation needed
 - **Drag-and-drop** -- drop a .tif file onto the window to load it
-- **Accurate real-world metre scale** -- 1 glTF unit = 1 metre
+- **GLB and OBJ export** -- choose your preferred mesh format
+- **Accurate real-world metre scale** -- 1 unit = 1 metre
 - **No GIS software needed** -- GDAL is bundled inside the app via rasterio
 - **Open source** -- MIT licensed
 
@@ -18,28 +19,29 @@ LiDAR2GLB is a Windows desktop app that turns DEFRA LiDAR elevation data (.tif) 
 
 ### Download
 
-Grab `lidar2glb.exe` from the [Releases](https://github.com/creaseygit/lidar2glb/releases) page and run it.
+Grab the latest release from the [Releases](https://github.com/creaseygit/lidar2mesh/releases) page and run `lidar2mesh.exe`.
 
 ### Developer Setup
 
 ```bash
-git clone https://github.com/creaseygit/lidar2glb.git
-cd lidar2glb
+git clone https://github.com/creaseygit/lidar2mesh.git
+cd lidar2mesh
 python -m venv venv
 venv\Scripts\activate
 pip install -r requirements-dev.txt
 python -m app.main
 ```
 
-Requires Python 3.11.
+Requires Python 3.11+.
 
 ## Usage
 
 1. Drop a `.tif` file onto the drop zone (or click to browse)
 2. Review the tile info (CRS, resolution, elevation range)
-3. Adjust export settings -- resolution (Full / Half / Quarter) and Z scale
-4. Set the output path
-5. Click **Export GLB**
+3. Choose export format (GLB or OBJ)
+4. Adjust settings -- resolution (Full / Half / Quarter) and Z scale
+5. Set the output path
+6. Click **Export Mesh**
 
 The log panel shows progress during export.
 
@@ -53,23 +55,25 @@ Navigate the map, select a survey, and download DSM or DTM tiles as GeoTIFF. The
 
 See [docs/defra-lidar.md](docs/defra-lidar.md) for a detailed guide.
 
-## GLB Output
+## Output Formats
 
-The output is a binary GLB file containing a single triangle mesh:
+### GLB
 
-- **Coordinate system**: Y-up (glTF standard). Source easting maps to X, elevation to Y, negated northing to Z.
-- **Scale**: 1 unit = 1 metre
-- **Metadata**: embedded in the root node's `extras.lidar2glb` object, including source CRS, origin coordinates, pixel size, and elevation range
+Binary glTF 2.0 file with a single triangle mesh. Coordinate system is Y-up (glTF standard), 1 unit = 1 metre. Metadata (source CRS, origin coordinates, pixel size, elevation range) is embedded in the root node's `extras.lidar2mesh` object.
 
 See [docs/glb-format.md](docs/glb-format.md) for full format documentation.
+
+### OBJ
+
+Wavefront OBJ text file with vertices and triangular faces. Metadata is written as comments in the file header. Same coordinate transform as GLB.
 
 ## Building from Source
 
 ```bash
-build\build.bat
+python -m PyInstaller build/lidar2mesh.spec --noconfirm
 ```
 
-This runs PyInstaller and produces `dist\lidar2glb.exe`. See [docs/development.md](docs/development.md) for details.
+Outputs to `dist/lidar2mesh/`. See [docs/development.md](docs/development.md) for details.
 
 ## Running Tests
 
@@ -83,7 +87,7 @@ pytest tests/
 
 ## Documentation
 
-- [SPEC.md](SPEC.md) -- full technical specification
+- [SPEC.md](SPEC.md) -- original technical specification
 - [docs/architecture.md](docs/architecture.md) -- architecture overview
 - [docs/glb-format.md](docs/glb-format.md) -- GLB output format
 - [docs/development.md](docs/development.md) -- developer guide

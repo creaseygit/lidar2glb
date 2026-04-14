@@ -28,11 +28,11 @@ _VERSION = "v1.0.0"
 
 
 class MainWindow(QMainWindow):
-    """Single-window UI for the LiDAR2GLB application."""
+    """Single-window UI for the LiDAR2Mesh application."""
 
     def __init__(self) -> None:
         super().__init__()
-        self.setWindowTitle(f"LiDAR2GLB  {_VERSION}")
+        self.setWindowTitle(f"LiDAR2Mesh  {_VERSION}")
         self.setMinimumSize(500, 700)
 
         self._tile_info: TileInfo | None = None
@@ -51,7 +51,7 @@ class MainWindow(QMainWindow):
 
         # Title bar
         header = QHBoxLayout()
-        title = QLabel("LiDAR2GLB")
+        title = QLabel("LiDAR2Mesh")
         title.setStyleSheet("font-size: 18px; font-weight: bold;")
         version = QLabel(_VERSION)
         version.setStyleSheet("color: #888888;")
@@ -73,7 +73,7 @@ class MainWindow(QMainWindow):
         root.addWidget(self._settings_panel)
 
         # Export button + progress
-        self._export_button = QPushButton("Export GLB")
+        self._export_button = QPushButton("Export Mesh")
         self._export_button.setMinimumHeight(36)
         self._export_button.setStyleSheet(
             "QPushButton { font-size: 14px; font-weight: bold; }"

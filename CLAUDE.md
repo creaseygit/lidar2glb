@@ -1,6 +1,6 @@
 # CLAUDE.md -- Project Index
 
-LiDAR2GLB is a Windows desktop application that converts DEFRA LiDAR GeoTIFF tiles (EPSG:27700) into GLB 3D mesh files. It provides a PyQt6 drag-and-drop UI, runs the conversion pipeline in a background thread, and ships as a single .exe via PyInstaller. The output GLB has accurate metre-scale geometry suitable for Blender, game engines, or any glTF viewer.
+LiDAR2Mesh is a Windows desktop application that converts DEFRA LiDAR GeoTIFF tiles (EPSG:27700) into 3D mesh files (GLB or OBJ). It provides a PyQt6 drag-and-drop UI, runs the conversion pipeline in a background thread, and ships as a distributable exe via PyInstaller. The output meshes have accurate metre-scale geometry suitable for Blender, game engines, or any 3D viewer.
 
 ## Project Structure
 
@@ -10,7 +10,7 @@ app/                  PyQt6 UI layer
   main_window.py      Main window layout and signal wiring
   drop_zone.py        Drag-and-drop file input widget
   tile_info_panel.py  Displays loaded tile metadata
-  settings_panel.py   Resolution, Z scale, output path controls
+  settings_panel.py   Format, resolution, Z scale, output path controls
   log_panel.py        Scrolling log output
 
 core/                 Processing pipeline
@@ -21,14 +21,14 @@ core/                 Processing pipeline
 
 exporters/            Output format writers
   glb_writer.py       numpy arrays to binary GLB via pygltflib
+  obj_writer.py       numpy arrays to Wavefront OBJ
 
 build/                Build tooling
   build.bat           Windows build script
-  lidar2glb.spec      PyInstaller spec (onedir, ICU exclusion, Qt6 DLL fix)
+  lidar2mesh.spec     PyInstaller spec (onedir, ICU exclusion, Qt6 DLL fix)
   pyi_rth_qt6_dlls.py Runtime hook: adds Qt6 DLL dir to search path
 
 tests/                Unit tests (pytest)
-  test_inspector.py   Tests for inspector and validation
 ```
 
 ## Documentation Index
@@ -36,7 +36,7 @@ tests/                Unit tests (pytest)
 | File | Description |
 |---|---|
 | [README.md](README.md) | Project overview, quick start, usage |
-| [SPEC.md](SPEC.md) | Full technical specification |
+| [SPEC.md](SPEC.md) | Original technical specification |
 | [docs/architecture.md](docs/architecture.md) | Pipeline architecture and data flow |
 | [docs/glb-format.md](docs/glb-format.md) | GLB output format and metadata schema |
 | [docs/development.md](docs/development.md) | Developer setup, testing, building |
@@ -51,8 +51,8 @@ python -m app.main
 # Run tests
 pytest tests/
 
-# Build the exe (outputs to dist/lidar2glb/)
-python -m PyInstaller build/lidar2glb.spec --noconfirm
+# Build the exe (outputs to dist/lidar2mesh/)
+python -m PyInstaller build/lidar2mesh.spec --noconfirm
 ```
 
 ## Tech Decisions
@@ -63,17 +63,19 @@ python -m PyInstaller build/lidar2glb.spec --noconfirm
 
 **pygltflib**: Pure Python GLB writer with no native dependencies. Allows direct construction of the glTF JSON structure and binary blob without shelling out to external tools.
 
+**OBJ writer**: Pure Python, no dependencies. Wavefront OBJ is a simple text format widely supported by 3D tools. Metadata is stored as comments in the header.
+
 ## Coordinate Transform
 
-The source data is in EPSG:27700 (British National Grid) with X = easting, Y = northing, Z = elevation. glTF uses a right-handed Y-up coordinate system. The pipeline triangulates on the XY ground plane first, then converts to glTF coordinates:
+The source data is in EPSG:27700 (British National Grid) with X = easting, Y = northing, Z = elevation. glTF uses a right-handed Y-up coordinate system. The pipeline triangulates on the XY ground plane first, then converts to glTF/OBJ coordinates:
 
 ```
-Source X (easting)           ->  glTF X
-Source Z (elevation)         ->  glTF Y  (up)
-Source Y (northing, negated) ->  glTF Z
+Source X (easting)           ->  X
+Source Z (elevation)         ->  Y  (up)
+Source Y (northing, negated) ->  Z
 ```
 
-A local origin shift is applied first (subtract min X and min Y) so the mesh is centred near the origin. The original easting/northing offsets are stored in the GLB metadata extras so the mesh can be repositioned to real-world coordinates if needed.
+A local origin shift is applied first (subtract min X and min Y) so the mesh is centred near the origin. The original easting/northing offsets are stored in the GLB metadata extras (or OBJ header comments) so the mesh can be repositioned to real-world coordinates if needed.
 
 ## Build Gotchas
 
